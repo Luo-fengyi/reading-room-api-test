@@ -38,8 +38,9 @@ def test_borrow_decrease_stock(api, headers, new_book):
 @pytest.mark.parametrize("quantity", [0, 4, -1, "abc"])
 def test_borrow_invalid_quantity(api, headers, new_book, quantity):
     r = api.post(f"{BASE_URL}/api/books/{new_book['id']}/borrow", json={"quantity": quantity}, headers=headers, timeout=5)
-    assert r.status_code == 400, f"quantity={quantity!r} 未被拒绝：HTTP {r.status_code} {r.text}"
-    assert r.json()["code"] != 0
+    body = r.json()
+    # 接口文档只约定「业务失败返回 code≠0」（第 4、12 条），没有规定状态码，所以不按 HTTP 400 判断
+    assert body["code"] != 0, f"quantity={quantity!r} 未被拒绝：HTTP {r.status_code} {r.text}"
 
 
 def test_borrow_without_token(api, new_book):
